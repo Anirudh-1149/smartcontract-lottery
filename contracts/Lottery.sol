@@ -19,10 +19,6 @@ contract Lottery is VRFConsumerBase, Ownable {
     uint256 public fee;
     bytes32 public keyhash;
 
-    // 0
-    // 1
-    // 2
-
     constructor(
         address _priceFeedAddress,
         address _vrfCoordinator,
@@ -46,7 +42,7 @@ contract Lottery is VRFConsumerBase, Ownable {
 
     function getEntranceFee() public view returns (uint256) {
         (, int256 price, , , ) = ethUsdPrceFeed.latestRoundData();
-        uint256 adjustedPrice = (uint256)(price) * 10**10; // eighteed decimals
+        uint256 adjustedPrice = (uint256)(price) * 10**10; // converted to eighteen decimals
         uint256 costToEnter = (usdEntryFee * 10**18) / adjustedPrice;
         return costToEnter;
     }
