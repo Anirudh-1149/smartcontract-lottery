@@ -6,6 +6,7 @@ from brownie import (
     Contract,
     VRFCoordinatorMock,
     LinkToken,
+    interface,
 )
 
 FORKED_LOCAL_ENVIRONMENTS = ["mainnet-fork", "mainnet-fork-dev"]
@@ -66,3 +67,18 @@ def deploy_mocks(decimals=DECIMALS, initial_value=INITIAL_VALUE):
     link_token = LinkToken.deploy({"from": account})
     VRFCoordinatorMock.deploy(link_token.address, {"from": account})
     print("Deployed!")
+
+
+def fund_with_link(
+    contract_address, account=None, link_token=None, amount=100000000000000000
+):
+    account = account if account else get_account()
+    link_token = link_token if link_token else get_contract("link_token")
+    tx = link_token.transfer(contract_address, amount, {"from": account})
+
+    # Another way to obtain the contract just from the address even when abi is not available
+    # link_token_contract = interface.LinkTokenInterface(link_token.address)
+    # tx = link_token_contract.transfer(contract_address, amount, {"from": account})
+    tx.wait(1)
+    print("funded contract!")
+    return tx

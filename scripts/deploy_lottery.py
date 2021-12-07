@@ -1,10 +1,13 @@
+from brownie.network import account
 from brownie.network.account import PublicKeyAccount
-from scripts.helpful_scripts import get_account, get_contract
+from toolz.itertoolz import get
+from scripts.helpful_scripts import get_account, get_contract, fund_with_link
 from brownie import Lottery, config, network
+import time
 
 
 def deploy_lottery():
-    account = get_account(id="freecodecamp-account")
+    account = get_account()
     lottery = Lottery.deploy(
         get_contract("eth_usd_price_feed").address,
         get_contract("vrf_coordinator").address,
@@ -15,6 +18,35 @@ def deploy_lottery():
         publish_source=config["networks"][network.show_active()].get("verify", False),
     )
     print("Deployed Lottery")
+    return lottery
+
+
+def start_lottery():
+    account = get_account()
+    lottery = Lottery[-1]
+    tx = lottery.startLottery({"from": account})
+    tx.wait(1)
+    print("Lottery Started!")
+
+
+def enter_lottery():
+    account = get_account()
+    lottery = Lottery[-1]
+    value = lottery.getEntranceFee() + 1000000
+    tx = lottery.enter({"from": account, "value": value})
+    tx.wait(1)
+    print("Enterned Lottery!")
+
+
+def end_lottery():
+    account = get_account()
+    lottery = Lottery[-1]
+    tx = fund_with_link(lottery.address)
+    tx.wait(1)
+    end_tx = lottery.endLottery({"from": account})
+    end_tx.wait(1)
+    time.sleep(60)
+    print(f"{lottery.recentWinner()}")
 
 
 def main():
